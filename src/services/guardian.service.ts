@@ -9,7 +9,7 @@ import axios from "axios";
 import {IUserOperation} from "testing-wallet-helper-functions/lib/constants/userOperations";
 import {Env} from "../config";
 
-export const create = async (walletAddress: string, newOwner: string, network: string) => {
+export const create = async (walletAddress: string, newOwner: string, network: Networks) => {
   const lastHour = new Date();
   lastHour.setHours(lastHour.getHours() - 1);
   if (await RecoverRequest.findOne({ createdAt: { $gte: lastHour} })) {

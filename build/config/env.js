@@ -9,9 +9,9 @@ dotenv_1.default.config();
 exports.Env = {
     NODE_ENV: process.env.NODE_ENV === "production" ? "production" : "development",
     NAME: "Guardians",
-    PORT: Number(process.env.CANDIDE_GUARDIAN_PORT),
-    MONGO_URL: process.env.CANDIDE_GUARDIAN_MONGODB_URL ?? "",
-    ALCHEMY_GOERLI_RPC: process.env.CANDIDE_GUARDIAN_ALCHEMY_GOERLI_RPC ?? "",
-    BUNDLER_URL: process.env.CANDIDE_GUARDIAN_BUNDLER_URL ?? "",
-    SENTRY_DSN: process.env.CANDIDE_GUARDIAN_SENTRY_DSN ?? "",
+    PORT: Number(process.env.CANDIDE_SECURITY_PORT),
+    MONGO_URL: process.env.CANDIDE_SECURITY_MONGODB_URL ?? "",
+    ALCHEMY_GOERLI_RPC: process.env.CANDIDE_SECURITY_ALCHEMY_GOERLI_RPC ?? "",
+    BUNDLER_URL: process.env.CANDIDE_SECURITY_BUNDLER_URL ?? "",
+    SENTRY_DSN: process.env.CANDIDE_SECURITY_SENTRY_DSN ?? "",
 };

@@ -1,14 +1,14 @@
 import httpStatus from "http-status";
 import { catchAsync, ApiError } from "../utils";
 import * as GuardianService from "../services/guardian.service";
-import {NetworkChainIds} from "../config/network";
+import {NetworkChainIds, Networks} from "../config/network";
 import {contracts, wallet} from "testing-wallet-helper-functions";
 import {ethers} from "ethers";
 
 interface PostRequestBody {
   walletAddress: string;
   newOwner: string;
-  network: string;
+  network: Networks;
 }
 
 interface SignRequestBody {
