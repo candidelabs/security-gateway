@@ -12,7 +12,11 @@ router
   .post(validate(guardianValidation.sign), guardianController.sign);
 
 router
-  .route("/fetch")
-  .get(validate(guardianValidation.fetch), guardianController.fetch);
+  .route("/fetchByAddress")
+  .get(validate(guardianValidation.fetchByAddress), guardianController.fetchByAddress);
+
+router
+  .route("/fetchById")
+  .get(validate(guardianValidation.fetchById), guardianController.fetchById);
 
 export default router;

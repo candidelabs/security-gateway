@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetch = exports.sign = exports.post = void 0;
+exports.fetchById = exports.fetchByAddress = exports.sign = exports.post = void 0;
 const joi_1 = __importDefault(require("joi"));
 const custom_validation_1 = require("./custom.validation");
 const config_1 = require("../config");
@@ -20,9 +20,14 @@ exports.sign = {
         signedMessage: joi_1.default.string().required(),
     }),
 };
-exports.fetch = {
+exports.fetchByAddress = {
     query: joi_1.default.object().keys({
         walletAddress: joi_1.default.custom(custom_validation_1.ethereumAddress).required(),
         network: joi_1.default.string().valid(...config_1.ValidNetworks).required(),
+    }),
+};
+exports.fetchById = {
+    query: joi_1.default.object().keys({
+        id: joi_1.default.string().required(),
     }),
 };

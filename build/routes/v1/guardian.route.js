@@ -36,6 +36,9 @@ router
     .route("/sign")
     .post((0, middlewares_1.validate)(guardianValidation.sign), guardianController.sign);
 router
-    .route("/fetch")
-    .get((0, middlewares_1.validate)(guardianValidation.fetch), guardianController.fetch);
+    .route("/fetchByAddress")
+    .get((0, middlewares_1.validate)(guardianValidation.fetchByAddress), guardianController.fetchByAddress);
+router
+    .route("/fetchById")
+    .get((0, middlewares_1.validate)(guardianValidation.fetchById), guardianController.fetchById);
 exports.default = router;

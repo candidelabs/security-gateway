@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findByWalletAddress = exports.getHashedMessage = exports.signRecoveryRequest = exports.create = void 0;
+exports.findById = exports.findByWalletAddress = exports.getHashedMessage = exports.signRecoveryRequest = exports.create = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const testing_wallet_helper_functions_1 = require("testing-wallet-helper-functions");
 const recoveryRequest_model_1 = __importDefault(require("../models/recoveryRequest.model"));
@@ -108,3 +108,7 @@ const findByWalletAddress = async (walletAddress, network) => {
     return recoveryRequest_model_1.default.find({ walletAddress, network, discoverable: true }, { signers: 0, signatures: 0 });
 };
 exports.findByWalletAddress = findByWalletAddress;
+const findById = async (id) => {
+    return recoveryRequest_model_1.default.find({ id: id, discoverable: true }, { signers: 0, signatures: 0 });
+};
+exports.findById = findById;

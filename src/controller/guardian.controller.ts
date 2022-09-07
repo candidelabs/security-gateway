@@ -34,7 +34,7 @@ export const sign = catchAsync(async (req, res) => {
   res.send({success:true});
 });
 
-export const fetch = catchAsync(async (req, res) => {
+export const fetchByAddress = catchAsync(async (req, res) => {
   const { walletAddress, network } = req.query as {
     walletAddress: string;
     network: Networks;
@@ -43,6 +43,25 @@ export const fetch = catchAsync(async (req, res) => {
   const walletRequests = await GuardianService.findByWalletAddress(
     walletAddress,
     network
+  );
+  const responses = [];
+  for (const request of walletRequests){
+    const requestJSON = await (request.toJSON());
+    const requestId = wallet.message.requestId(requestJSON.userOperation, contracts.EntryPoint.address, NetworkChainIds[request.network]);
+    const object = {...requestJSON, requestId: requestId, userOperation: null};
+    responses.push(object);
+  }
+
+  res.send(responses);
+});
+
+export const fetchById = catchAsync(async (req, res) => {
+  const { id } = req.query as {
+    id: string;
+  };
+
+  const walletRequests = await GuardianService.findById(
+    id,
   );
   const responses = [];
   for (const request of walletRequests){

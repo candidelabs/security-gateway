@@ -18,9 +18,15 @@ export const sign = {
   }),
 };
 
-export const fetch = {
+export const fetchByAddress = {
   query: Joi.object().keys({
     walletAddress: Joi.custom(ethereumAddress).required(),
     network: Joi.string().valid(...ValidNetworks).required(),
+  }),
+};
+
+export const fetchById = {
+  query: Joi.object().keys({
+    id: Joi.string().required(),
   }),
 };

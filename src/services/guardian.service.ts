@@ -128,3 +128,7 @@ export const getHashedMessage = async (recoveryRequest: IRecoveryRequest) => {
 export const findByWalletAddress = async (walletAddress: string, network: Networks) => {
   return RecoverRequest.find({ walletAddress, network, discoverable:true }, {signers: 0, signatures: 0});
 };
+
+export const findById = async (id: string) => {
+  return RecoverRequest.find({ id: id, discoverable:true }, {signers: 0, signatures: 0});
+};
