@@ -35,12 +35,14 @@ export const sign = catchAsync(async (req, res) => {
 });
 
 export const fetch = catchAsync(async (req, res) => {
-  const { walletAddress } = req.query as {
+  const { walletAddress, network } = req.query as {
     walletAddress: string;
+    network: Networks;
   };
 
   const walletRequests = await GuardianService.findByWalletAddress(
-    walletAddress
+    walletAddress,
+    network
   );
   const responses = [];
   for (const request of walletRequests){
