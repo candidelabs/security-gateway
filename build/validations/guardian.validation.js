@@ -6,11 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetch = exports.sign = exports.post = void 0;
 const joi_1 = __importDefault(require("joi"));
 const custom_validation_1 = require("./custom.validation");
+const config_1 = require("../config");
 exports.post = {
     body: joi_1.default.object().keys({
         walletAddress: joi_1.default.required().custom(custom_validation_1.ethereumAddress),
         newOwner: joi_1.default.required().custom(custom_validation_1.ethereumAddress),
-        network: joi_1.default.string().required(),
+        network: joi_1.default.string().valid(...config_1.ValidNetworks).required(),
     }),
 };
 exports.sign = {
@@ -22,5 +23,6 @@ exports.sign = {
 exports.fetch = {
     query: joi_1.default.object().keys({
         walletAddress: joi_1.default.custom(custom_validation_1.ethereumAddress).required(),
+        network: joi_1.default.string().valid(...config_1.ValidNetworks).required(),
     }),
 };

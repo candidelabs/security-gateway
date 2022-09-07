@@ -16,11 +16,17 @@ const config_1 = require("../config");
 const create = async (walletAddress, newOwner, network) => {
     const lastHour = new Date();
     lastHour.setHours(lastHour.getHours() - 1);
-    if (await recoveryRequest_model_1.default.findOne({ createdAt: { $gte: lastHour } })) {
+    if (await recoveryRequest_model_1.default.findOne({ walletAddress: walletAddress, createdAt: { $gte: lastHour } })) {
         throw new utils_1.ApiError(http_status_1.default.TOO_MANY_REQUESTS, `You hit a rate limit for recovery creations`);
     }
-    const provider = new ethers_1.ethers.providers.JsonRpcProvider((0, rpc_1.getRPC)(network));
-    const nonce = await testing_wallet_helper_functions_1.wallet.proxy.getNonce(provider, walletAddress);
+    let nonce = 0;
+    try {
+        const provider = new ethers_1.ethers.providers.JsonRpcProvider((0, rpc_1.getRPC)(network));
+        nonce = await testing_wallet_helper_functions_1.wallet.proxy.getNonce(provider, walletAddress);
+    }
+    catch (e) {
+        throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Lost wallet address is not a smart contract wallet`);
+    }
     return recoveryRequest_model_1.default.create({
         emoji: (0, utils_1.createEmojiSet)(15, false),
         walletAddress,
@@ -98,7 +104,7 @@ const getHashedMessage = async (recoveryRequest) => {
     return ethers_1.ethers.utils.arrayify(testing_wallet_helper_functions_1.wallet.message.requestId(recoveryRequest.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[recoveryRequest.network]));
 };
 exports.getHashedMessage = getHashedMessage;
-const findByWalletAddress = async (walletAddress) => {
-    return recoveryRequest_model_1.default.find({ walletAddress, discoverable: true }, { signers: 0, signatures: 0 });
+const findByWalletAddress = async (walletAddress, network) => {
+    return recoveryRequest_model_1.default.find({ walletAddress, network, discoverable: true }, { signers: 0, signatures: 0 });
 };
 exports.findByWalletAddress = findByWalletAddress;
