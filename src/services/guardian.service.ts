@@ -12,7 +12,7 @@ import {Env} from "../config";
 export const create = async (walletAddress: string, newOwner: string, network: Networks) => {
   const lastHour = new Date();
   lastHour.setHours(lastHour.getHours() - 1);
-  if (await RecoverRequest.findOne({ createdAt: { $gte: lastHour} })) {
+  if (await RecoverRequest.findOne({ walletAddress: walletAddress, createdAt: { $gte: lastHour} })) {
     throw new ApiError(
       httpStatus.TOO_MANY_REQUESTS,
       `You hit a rate limit for recovery creations`
