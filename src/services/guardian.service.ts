@@ -130,5 +130,5 @@ export const findByWalletAddress = async (walletAddress: string, network: Networ
 };
 
 export const findById = async (id: string) => {
-  return RecoverRequest.findOne({ _id: id, discoverable:true }, {signers: 0, signatures: 0});
+  return RecoverRequest.findOne({ _id: id, discoverable:true }, {signers: 0});
 };

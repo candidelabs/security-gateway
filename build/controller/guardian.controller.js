@@ -62,6 +62,6 @@ exports.fetchById = (0, utils_1.catchAsync)(async (req, res) => {
     }
     const requestJSON = await (request.toJSON());
     const requestId = testing_wallet_helper_functions_1.wallet.message.requestId(requestJSON.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[request.network]);
-    const object = { ...requestJSON, requestId: requestId, userOperation: null };
+    const object = { ...requestJSON, requestId: requestId, signaturesAcquired: requestJSON.signatures.length, userOperation: null, signatures: null };
     res.send(object);
 });

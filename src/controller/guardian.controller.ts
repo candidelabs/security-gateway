@@ -72,7 +72,7 @@ export const fetchById = catchAsync(async (req, res) => {
 
   const requestJSON = await (request.toJSON());
   const requestId = wallet.message.requestId(requestJSON.userOperation, contracts.EntryPoint.address, NetworkChainIds[request.network]);
-  const object = {...requestJSON, requestId: requestId, userOperation: null};
+  const object = {...requestJSON, requestId: requestId, signaturesAcquired: requestJSON.signatures.length, userOperation: null, signatures: null};
 
   res.send(object);
 });
