@@ -18,8 +18,16 @@ export const create = async (walletAddress: string, newOwner: string, network: N
       `You hit a rate limit for recovery creations`
     );
   }
-  const provider = new ethers.providers.JsonRpcProvider(getRPC(network));
-  const nonce = await wallet.proxy.getNonce(provider, walletAddress);
+  let nonce = 0;
+  try {
+    const provider = new ethers.providers.JsonRpcProvider(getRPC(network));
+    nonce = await wallet.proxy.getNonce(provider, walletAddress);
+  } catch (e) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Lost wallet address is not a smart contract wallet`
+    );
+  }
   return RecoverRequest.create(
     {
       emoji: createEmojiSet(15, false),
