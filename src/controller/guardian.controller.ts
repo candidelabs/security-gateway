@@ -60,16 +60,19 @@ export const fetchById = catchAsync(async (req, res) => {
     id: string;
   };
 
-  const walletRequests = await GuardianService.findById(
+  const request = await GuardianService.findById(
     id,
   );
-  const responses = [];
-  for (const request of walletRequests){
-    const requestJSON = await (request.toJSON());
-    const requestId = wallet.message.requestId(requestJSON.userOperation, contracts.EntryPoint.address, NetworkChainIds[request.network]);
-    const object = {...requestJSON, requestId: requestId, userOperation: null};
-    responses.push(object);
+  if (request == null){
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      `Recovery request not found`
+    );
   }
 
-  res.send(responses);
+  const requestJSON = await (request.toJSON());
+  const requestId = wallet.message.requestId(requestJSON.userOperation, contracts.EntryPoint.address, NetworkChainIds[request.network]);
+  const object = {...requestJSON, requestId: requestId, userOperation: null};
+
+  res.send(object);
 });

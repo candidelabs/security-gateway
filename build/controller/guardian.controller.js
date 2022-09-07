@@ -22,8 +22,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchById = exports.fetchByAddress = exports.sign = exports.post = void 0;
+const http_status_1 = __importDefault(require("http-status"));
 const utils_1 = require("../utils");
 const GuardianService = __importStar(require("../services/guardian.service"));
 const network_1 = require("../config/network");
@@ -52,13 +56,12 @@ exports.fetchByAddress = (0, utils_1.catchAsync)(async (req, res) => {
 });
 exports.fetchById = (0, utils_1.catchAsync)(async (req, res) => {
     const { id } = req.query;
-    const walletRequests = await GuardianService.findById(id);
-    const responses = [];
-    for (const request of walletRequests) {
-        const requestJSON = await (request.toJSON());
-        const requestId = testing_wallet_helper_functions_1.wallet.message.requestId(requestJSON.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[request.network]);
-        const object = { ...requestJSON, requestId: requestId, userOperation: null };
-        responses.push(object);
+    const request = await GuardianService.findById(id);
+    if (request == null) {
+        throw new utils_1.ApiError(http_status_1.default.NOT_FOUND, `Recovery request not found`);
     }
-    res.send(responses);
+    const requestJSON = await (request.toJSON());
+    const requestId = testing_wallet_helper_functions_1.wallet.message.requestId(requestJSON.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[request.network]);
+    const object = { ...requestJSON, requestId: requestId, userOperation: null };
+    res.send(object);
 });
