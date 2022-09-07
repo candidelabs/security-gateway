@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { wallet } from "testing-wallet-helper-functions";
 import { ethereumAddress } from "./custom.validation";
 import {ValidNetworks} from "../config";
 

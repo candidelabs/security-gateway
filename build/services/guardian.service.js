@@ -109,6 +109,6 @@ const findByWalletAddress = async (walletAddress, network) => {
 };
 exports.findByWalletAddress = findByWalletAddress;
 const findById = async (id) => {
-    return recoveryRequest_model_1.default.findOne({ id: id, discoverable: true }, { signers: 0, signatures: 0 });
+    return recoveryRequest_model_1.default.findOne({ _id: id, discoverable: true }, { signers: 0, signatures: 0 });
 };
 exports.findById = findById;
