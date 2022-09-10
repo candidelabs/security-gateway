@@ -38,12 +38,8 @@ exports.post = (0, utils_1.catchAsync)(async (req, res) => {
     res.send(response);
 });
 exports.sign = (0, utils_1.catchAsync)(async (req, res) => {
-    console.log("M0");
     const { id, signedMessage } = req.body;
-    console.log("M1");
-    console.log("M2");
     await GuardianService.signRecoveryRequest(id, signedMessage);
-    console.log("M3");
     res.send({ success: true });
 });
 exports.fetchByAddress = (0, utils_1.catchAsync)(async (req, res) => {
