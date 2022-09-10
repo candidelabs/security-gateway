@@ -11,8 +11,6 @@ const utils_1 = require("../utils");
 const ethers_1 = require("ethers");
 const network_1 = require("../config/network");
 const rpc_1 = require("../utils/rpc");
-const axios_1 = __importDefault(require("axios"));
-const config_1 = require("../config");
 const create = async (walletAddress, newOwner, network) => {
     const lastHour = new Date();
     lastHour.setHours(lastHour.getHours() - 1);
@@ -96,9 +94,15 @@ const runRelayChecks = async (recoveryRequest) => {
     }
     // if all checks pass, relay to bundler
     await relayUserOperations([recoveryRequest.userOperation], recoveryRequest.network);
+    recoveryRequest.set({ status: "SUCCESS" });
+    await recoveryRequest.save();
 };
 const relayUserOperations = async (userOperations, network) => {
-    await axios_1.default.post(`${config_1.Env.BUNDLER_URL}/v1/relay/submit`, { userOperations, network });
+    console.log("Emulation: ops relayed");
+    /*await axios.post(
+      `${Env.BUNDLER_URL}/v1/relay/submit`,
+      {userOperations, network},
+    );*/
 };
 const getHashedMessage = async (recoveryRequest) => {
     return ethers_1.ethers.utils.arrayify(testing_wallet_helper_functions_1.wallet.message.requestId(recoveryRequest.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[recoveryRequest.network]));
