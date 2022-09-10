@@ -52,9 +52,16 @@ const signRecoveryRequest = async (requestId, signature) => {
     }
     const recoveryRequestJSON = recoveryRequest.toJSON();
     const signers = recoveryRequestJSON.signers;
-    signers.push(signer);
     const signatures = recoveryRequestJSON.signatures;
-    signatures.push(signature);
+    //
+    if (!signers.includes(signer)) {
+        signers.push(signer);
+        signatures.push(signature);
+    }
+    else {
+        return true;
+    }
+    //
     recoveryRequest.set({ signers, signatures });
     await recoveryRequest.save();
     //
