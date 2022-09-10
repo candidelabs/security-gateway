@@ -108,14 +108,17 @@ const runRelayChecks = async (recoveryRequest: IRecoveryRequest) => {
   }
   // if all checks pass, relay to bundler
   await relayUserOperations([recoveryRequest.userOperation], recoveryRequest.network);
+  recoveryRequest.set({status: "SUCCESS"});
+  await recoveryRequest.save();
 }
 
 
 const relayUserOperations = async (userOperations: Array<IUserOperation>, network: Networks) => {
-  await axios.post(
+  console.log("Emulation: ops relayed");
+  /*await axios.post(
     `${Env.BUNDLER_URL}/v1/relay/submit`,
     {userOperations, network},
-  );
+  );*/
 }
 
 
