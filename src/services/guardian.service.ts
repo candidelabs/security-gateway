@@ -49,15 +49,15 @@ export const create = async (walletAddress: string, newOwner: string, network: N
   );
 };
 
-export const signRecoveryRequest = async (requestId: string, signature: string) => {
-  const recoveryRequest = await RecoverRequest.findOne({ id: requestId });
-  if (!recoveryRequest){
+export const signRecoveryRequest = async (id: string, signedMessage: string) => {
+  const recoveryRequest = await RecoverRequest.findOne({ _id: id });
+  if (!recoveryRequest) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       `Could not find recovery request by id`
     );
   }
-  const signer = ethers.utils.verifyMessage(await getHashedMessage(recoveryRequest), ethers.utils.arrayify(signature));
+  const signer = ethers.utils.verifyMessage(await getHashedMessage(recoveryRequest), ethers.utils.arrayify(signedMessage));
   if (!signer){
     throw new ApiError(
       httpStatus.BAD_REQUEST,
@@ -70,7 +70,7 @@ export const signRecoveryRequest = async (requestId: string, signature: string) 
   //
   if (!signers.includes(signer)){
     signers.push(signer);
-    signatures.push(signature);
+    signatures.push(signedMessage);
   }else{
     return true;
   }

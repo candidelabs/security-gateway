@@ -43,12 +43,12 @@ const create = async (walletAddress, newOwner, network) => {
     });
 };
 exports.create = create;
-const signRecoveryRequest = async (requestId, signature) => {
-    const recoveryRequest = await recoveryRequest_model_1.default.findOne({ id: requestId });
+const signRecoveryRequest = async (id, signedMessage) => {
+    const recoveryRequest = await recoveryRequest_model_1.default.findOne({ _id: id });
     if (!recoveryRequest) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Could not find recovery request by id`);
     }
-    const signer = ethers_1.ethers.utils.verifyMessage(await (0, exports.getHashedMessage)(recoveryRequest), ethers_1.ethers.utils.arrayify(signature));
+    const signer = ethers_1.ethers.utils.verifyMessage(await (0, exports.getHashedMessage)(recoveryRequest), ethers_1.ethers.utils.arrayify(signedMessage));
     if (!signer) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Invalid signature`);
     }
@@ -58,7 +58,7 @@ const signRecoveryRequest = async (requestId, signature) => {
     //
     if (!signers.includes(signer)) {
         signers.push(signer);
-        signatures.push(signature);
+        signatures.push(signedMessage);
     }
     else {
         return true;
