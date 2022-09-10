@@ -106,12 +106,25 @@ const runRelayChecks = async (recoveryRequest) => {
         return false;
     }
     // if all checks pass, relay to bundler
-    await relayUserOperations([recoveryRequest.userOperation], recoveryRequest.network);
+    await relayUserOperations(recoveryRequest);
     recoveryRequest.set({ status: "SUCCESS" });
     await recoveryRequest.save();
 };
-const relayUserOperations = async (userOperations, network) => {
-    await axios_1.default.post(`${config_1.Env.BUNDLER_URL}/v1/relay/submit`, { userOperations, network });
+const relayUserOperations = async (recoveryRequest) => {
+    const walletSignatureValues = [];
+    const recoveryRequestJSON = recoveryRequest.toJSON();
+    for (let i = 0; i < recoveryRequestJSON.signers.length; i++) {
+        const signerAddress = recoveryRequestJSON.signers[i];
+        const signature = recoveryRequestJSON.signatures[i];
+        walletSignatureValues.push({
+            signer: signerAddress,
+            signature: signature,
+        });
+    }
+    console.log(recoveryRequestJSON.userOperation.signature);
+    recoveryRequestJSON.userOperation.signature = ethers_1.ethers.utils.defaultAbiCoder.encode(["uint8", "(address signer, bytes signature)[]"], [1, walletSignatureValues]);
+    console.log(recoveryRequestJSON.userOperation.signature);
+    await axios_1.default.post(`${config_1.Env.BUNDLER_URL}/v1/relay/submit`, { userOperations: [recoveryRequestJSON.userOperation], network: (recoveryRequestJSON.network) });
 };
 const getHashedMessage = async (recoveryRequest) => {
     return ethers_1.ethers.utils.arrayify(testing_wallet_helper_functions_1.wallet.message.requestId(recoveryRequest.toJSON().userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[recoveryRequest.network]));

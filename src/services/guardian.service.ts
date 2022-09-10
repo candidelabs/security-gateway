@@ -117,16 +117,32 @@ const runRelayChecks = async (recoveryRequest: IRecoveryRequest) => {
     return false;
   }
   // if all checks pass, relay to bundler
-  await relayUserOperations([recoveryRequest.userOperation], recoveryRequest.network);
+  await relayUserOperations(recoveryRequest);
   recoveryRequest.set({status: "SUCCESS"});
   await recoveryRequest.save();
 }
 
 
-const relayUserOperations = async (userOperations: Array<IUserOperation>, network: Networks) => {
+const relayUserOperations = async (recoveryRequest: IRecoveryRequest) => {
+  const walletSignatureValues = [];
+  const recoveryRequestJSON = recoveryRequest.toJSON();
+  for (let i = 0; i < recoveryRequestJSON.signers.length; i++){
+    const signerAddress = recoveryRequestJSON.signers[i];
+    const signature = recoveryRequestJSON.signatures[i];
+    walletSignatureValues.push({
+      signer: signerAddress,
+      signature: signature,
+    })
+  }
+  console.log(recoveryRequestJSON.userOperation.signature);
+  recoveryRequestJSON.userOperation.signature = ethers.utils.defaultAbiCoder.encode(
+    ["uint8", "(address signer, bytes signature)[]"],
+    [1, walletSignatureValues]
+  );
+  console.log(recoveryRequestJSON.userOperation.signature);
   await axios.post(
     `${Env.BUNDLER_URL}/v1/relay/submit`,
-    {userOperations, network},
+    {userOperations: [recoveryRequestJSON.userOperation], network: (recoveryRequestJSON.network)},
   );
 }
 
