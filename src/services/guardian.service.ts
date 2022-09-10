@@ -6,6 +6,8 @@ import {ethers} from "ethers";
 import {NetworkChainIds, Networks} from "../config/network";
 import {getRPC} from "../utils/rpc";
 import {IUserOperation} from "testing-wallet-helper-functions/lib/constants/userOperations";
+import axios from "axios";
+import {Env} from "../config";
 
 export const create = async (walletAddress: string, newOwner: string, network: Networks) => {
   const lastHour = new Date();
@@ -116,17 +118,16 @@ const runRelayChecks = async (recoveryRequest: IRecoveryRequest) => {
   }
   // if all checks pass, relay to bundler
   await relayUserOperations([recoveryRequest.userOperation], recoveryRequest.network);
-  //recoveryRequest.set({status: "SUCCESS"});
-  //await recoveryRequest.save();
+  recoveryRequest.set({status: "SUCCESS"});
+  await recoveryRequest.save();
 }
 
 
 const relayUserOperations = async (userOperations: Array<IUserOperation>, network: Networks) => {
-  console.log("Emulation: ops relayed");
-  /*await axios.post(
+  await axios.post(
     `${Env.BUNDLER_URL}/v1/relay/submit`,
     {userOperations, network},
-  );*/
+  );
 }
 
 
