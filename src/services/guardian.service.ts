@@ -57,7 +57,7 @@ export const signRecoveryRequest = async (requestId: string, signature: string) 
       `Could not find recovery request by id`
     );
   }
-  const signer = ethers.utils.verifyMessage(await getHashedMessage(recoveryRequest), signature);
+  const signer = ethers.utils.verifyMessage(await getHashedMessage(recoveryRequest), ethers.utils.arrayify(signature));
   if (!signer){
     throw new ApiError(
       httpStatus.BAD_REQUEST,

@@ -46,7 +46,7 @@ const signRecoveryRequest = async (requestId, signature) => {
     if (!recoveryRequest) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Could not find recovery request by id`);
     }
-    const signer = ethers_1.ethers.utils.verifyMessage(await (0, exports.getHashedMessage)(recoveryRequest), signature);
+    const signer = ethers_1.ethers.utils.verifyMessage(await (0, exports.getHashedMessage)(recoveryRequest), ethers_1.ethers.utils.arrayify(signature));
     if (!signer) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Invalid signature`);
     }
