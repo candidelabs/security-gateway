@@ -24,11 +24,15 @@ export const post = catchAsync(async (req, res) => {
 });
 
 export const sign = catchAsync(async (req, res) => {
+  console.log("M0");
   const { id, signedMessage } = req.body as SignRequestBody;
+  console.log("M1");
 
+  console.log("M2");
   await GuardianService.signRecoveryRequest(
     id, signedMessage
   );
+  console.log("M3");
 
   res.send({success:true});
 });

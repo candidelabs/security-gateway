@@ -42,60 +42,89 @@ const create = async (walletAddress, newOwner, network) => {
 };
 exports.create = create;
 const signRecoveryRequest = async (requestId, signature) => {
+    console.log("K0");
     const recoveryRequest = await recoveryRequest_model_1.default.findOne({ id: requestId });
+    console.log("K1");
     if (!recoveryRequest) {
+        console.log("K2");
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Could not find recovery request by id`);
     }
+    console.log("K3");
     const signer = ethers_1.ethers.utils.verifyMessage(await (0, exports.getHashedMessage)(recoveryRequest), ethers_1.ethers.utils.arrayify(signature));
+    console.log("K4");
     if (!signer) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Invalid signature`);
     }
-    const signers = recoveryRequest.signers.push(signer);
-    const signatures = recoveryRequest.signatures.push(signature);
+    console.log(`K6 - ${signer} - ${signature}`);
+    const recoveryRequestJSON = recoveryRequest.toJSON();
+    const signers = recoveryRequestJSON.signers;
+    signers.push(signer);
+    console.log(`K6 - ${signers}`);
+    const signatures = recoveryRequestJSON.signatures;
+    signatures.push(signature);
+    console.log(`K7 - ${signatures}`);
     recoveryRequest.set({ signers, signatures });
+    console.log("K8");
     await recoveryRequest.save();
+    console.log("K9");
     //
     await runRelayChecks(recoveryRequest);
+    console.log("K10");
     //
     return true;
 };
 exports.signRecoveryRequest = signRecoveryRequest;
 const runRelayChecks = async (recoveryRequest) => {
+    console.log("P0");
+    const recoveryRequestJSON = recoveryRequest.toJSON();
     const provider = new ethers_1.ethers.providers.JsonRpcProvider((0, rpc_1.getRPC)(recoveryRequest.network));
     const lostWallet = await testing_wallet_helper_functions_1.contracts.Wallet.getInstance(provider).attach(recoveryRequest.walletAddress);
-    const nonce = await testing_wallet_helper_functions_1.wallet.proxy.getNonce(provider, recoveryRequest.walletAddress);
-    if (nonce !== recoveryRequest.userOperation.nonce) {
+    const nonce = (await lostWallet.nonce()).toNumber();
+    console.log("P1");
+    if (nonce !== recoveryRequestJSON.userOperation.nonce) {
+        console.log("P2");
         recoveryRequest.set({ discoverable: false });
         await recoveryRequest.save();
+        console.log("P3");
         return false;
     }
+    console.log("P4");
     //
     const guardiansCount = (await lostWallet.getGuardiansCount()).toNumber();
     const guardians = [];
+    console.log("P5");
     for (let i = 0; i < guardiansCount; i++) {
+        console.log("P6");
         const guardianAddress = await lostWallet.getGuardian(i);
         guardians.push(guardianAddress);
     }
+    console.log("P7");
     const signers = [];
     const signatures = [];
-    for (let i = 0; i < recoveryRequest.signers.length; i++) {
-        const signerAddress = recoveryRequest.signers[i];
+    for (let i = 0; i < recoveryRequestJSON.signers.length; i++) {
+        console.log("P8");
+        const signerAddress = recoveryRequestJSON.signers[i];
         if (guardians.includes(signerAddress)) {
             signers.push(signerAddress);
-            signatures.push(recoveryRequest.signatures[i]);
+            signatures.push(recoveryRequestJSON.signatures[i]);
         }
     }
+    console.log("P9");
     recoveryRequest.set({ signers, signatures });
     await recoveryRequest.save();
+    console.log("P10");
     //
     const minimumGuardians = (await lostWallet.getMinGuardiansSignatures()).toNumber();
+    console.log("P11");
     if (signers.length < minimumGuardians) {
+        console.log("P12");
         return false;
     }
+    console.log("P13");
     // if all checks pass, relay to bundler
     await relayUserOperations([recoveryRequest.userOperation], recoveryRequest.network);
-    recoveryRequest.set({ status: "SUCCESS" });
-    await recoveryRequest.save();
+    //recoveryRequest.set({status: "SUCCESS"});
+    //await recoveryRequest.save();
 };
 const relayUserOperations = async (userOperations, network) => {
     console.log("Emulation: ops relayed");
@@ -105,7 +134,7 @@ const relayUserOperations = async (userOperations, network) => {
     );*/
 };
 const getHashedMessage = async (recoveryRequest) => {
-    return ethers_1.ethers.utils.arrayify(testing_wallet_helper_functions_1.wallet.message.requestId(recoveryRequest.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[recoveryRequest.network]));
+    return ethers_1.ethers.utils.arrayify(testing_wallet_helper_functions_1.wallet.message.requestId(recoveryRequest.toJSON().userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[recoveryRequest.network]));
 };
 exports.getHashedMessage = getHashedMessage;
 const findByWalletAddress = async (walletAddress, network) => {
