@@ -33,7 +33,7 @@ const create = async (walletAddress, newOwner, network) => {
         newOwner,
         network,
         userOperation: testing_wallet_helper_functions_1.wallet.userOperations.get(walletAddress, {
-            callData: testing_wallet_helper_functions_1.wallet.encodeFunctionData.transferOwner(walletAddress),
+            callData: testing_wallet_helper_functions_1.wallet.encodeFunctionData.transferOwner(newOwner),
             nonce,
         }),
         signers: [],
@@ -50,7 +50,7 @@ const signRecoveryRequest = async (requestId, signature) => {
     }
     const signer = ethers_1.ethers.utils.verifyMessage(await (0, exports.getHashedMessage)(recoveryRequest), signature);
     if (!signer) {
-        throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Invalid signer`);
+        throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Invalid signature`);
     }
     const signers = recoveryRequest.signers.push(signer);
     const signatures = recoveryRequest.signatures.push(signature);
@@ -105,7 +105,7 @@ const getHashedMessage = async (recoveryRequest) => {
 };
 exports.getHashedMessage = getHashedMessage;
 const findByWalletAddress = async (walletAddress, network) => {
-    return recoveryRequest_model_1.default.find({ walletAddress, network, discoverable: true }, { signers: 0, signatures: 0 });
+    return recoveryRequest_model_1.default.find({ walletAddress, network, discoverable: true }, { signers: 0 });
 };
 exports.findByWalletAddress = findByWalletAddress;
 const findById = async (id) => {

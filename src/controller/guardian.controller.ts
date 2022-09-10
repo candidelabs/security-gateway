@@ -47,7 +47,7 @@ export const fetchByAddress = catchAsync(async (req, res) => {
   for (const request of walletRequests){
     const requestJSON = await (request.toJSON());
     const requestId = wallet.message.requestId(requestJSON.userOperation, contracts.EntryPoint.address, NetworkChainIds[request.network]);
-    const object = {...requestJSON, requestId: requestId, userOperation: null};
+    const object = {...requestJSON, requestId: requestId, signaturesAcquired: requestJSON.signatures.length, userOperation: null, signatures: null};
     responses.push(object);
   }
 

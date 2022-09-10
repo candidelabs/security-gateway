@@ -37,7 +37,7 @@ export const create = async (walletAddress: string, newOwner: string, network: N
       userOperation: wallet.userOperations.get(
         walletAddress,
         {
-          callData: wallet.encodeFunctionData.transferOwner(walletAddress),
+          callData: wallet.encodeFunctionData.transferOwner(newOwner),
           nonce,
         }
       ),
@@ -61,7 +61,7 @@ export const signRecoveryRequest = async (requestId: string, signature: string) 
   if (!signer){
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      `Invalid signer`
+      `Invalid signature`
     );
   }
   const signers = recoveryRequest.signers.push(signer);
@@ -126,7 +126,7 @@ export const getHashedMessage = async (recoveryRequest: IRecoveryRequest) => {
 }
 
 export const findByWalletAddress = async (walletAddress: string, network: Networks) => {
-  return RecoverRequest.find({ walletAddress, network, discoverable:true }, {signers: 0, signatures: 0});
+  return RecoverRequest.find({ walletAddress, network, discoverable:true }, {signers: 0});
 };
 
 export const findById = async (id: string) => {
