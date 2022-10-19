@@ -3,17 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findById = exports.findByWalletAddress = exports.getHashedMessage = exports.signRecoveryRequest = exports.create = void 0;
+exports.findById = exports.findByWalletAddress = exports.signDataHash = exports.submit = exports.create = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const testing_wallet_helper_functions_1 = require("testing-wallet-helper-functions");
 const recoveryRequest_model_1 = __importDefault(require("../models/recoveryRequest.model"));
 const utils_1 = require("../utils");
 const ethers_1 = require("ethers");
-const network_1 = require("../config/network");
 const rpc_1 = require("../utils/rpc");
-const axios_1 = __importDefault(require("axios"));
-const config_1 = require("../config");
-const create = async (walletAddress, newOwner, network) => {
+const create = async (walletAddress, socialRecoveryAddress, oldOwner, newOwner, dataHash, network) => {
     const lastHour = new Date();
     lastHour.setHours(lastHour.getHours() - 1);
     if (await recoveryRequest_model_1.default.findOne({ walletAddress: walletAddress, createdAt: { $gte: lastHour } })) {
@@ -30,25 +27,37 @@ const create = async (walletAddress, newOwner, network) => {
     return recoveryRequest_model_1.default.create({
         emoji: (0, utils_1.createEmojiSet)(15, false),
         walletAddress,
+        socialRecoveryAddress,
+        oldOwner,
         newOwner,
         network,
-        userOperation: testing_wallet_helper_functions_1.wallet.userOperations.get(walletAddress, {
-            callData: testing_wallet_helper_functions_1.wallet.encodeFunctionData.transferOwner(newOwner),
-            nonce,
-        }),
+        dataHash,
         signers: [],
         signatures: [],
         status: "PENDING",
+        readyToSubmit: false,
         discoverable: true,
     });
 };
 exports.create = create;
-const signRecoveryRequest = async (id, signedMessage) => {
+const submit = async (id, transactionHash) => {
     const recoveryRequest = await recoveryRequest_model_1.default.findOne({ _id: id });
     if (!recoveryRequest) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Could not find recovery request by id`);
     }
-    const signer = ethers_1.ethers.utils.verifyMessage(await (0, exports.getHashedMessage)(recoveryRequest), ethers_1.ethers.utils.arrayify(signedMessage));
+    //
+    recoveryRequest.set({ transactionHash, discoverable: false, status: "SUCCESS" });
+    await recoveryRequest.save();
+    //
+    return true;
+};
+exports.submit = submit;
+const signDataHash = async (id, signedMessage) => {
+    const recoveryRequest = await recoveryRequest_model_1.default.findOne({ _id: id });
+    if (!recoveryRequest) {
+        throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Could not find recovery request by id`);
+    }
+    const signer = ethers_1.ethers.utils.verifyMessage(ethers_1.ethers.utils.arrayify(recoveryRequest.dataHash), ethers_1.ethers.utils.arrayify(signedMessage));
     if (!signer) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Invalid signature`);
     }
@@ -71,22 +80,22 @@ const signRecoveryRequest = async (id, signedMessage) => {
     //
     return true;
 };
-exports.signRecoveryRequest = signRecoveryRequest;
+exports.signDataHash = signDataHash;
 const runRelayChecks = async (recoveryRequest) => {
     const recoveryRequestJSON = recoveryRequest.toJSON();
     const provider = new ethers_1.ethers.providers.JsonRpcProvider((0, rpc_1.getRPC)(recoveryRequest.network));
-    const lostWallet = await testing_wallet_helper_functions_1.contracts.Wallet.getInstance(provider).attach(recoveryRequest.walletAddress);
-    const nonce = (await lostWallet.nonce()).toNumber();
-    if (nonce !== recoveryRequestJSON.userOperation.nonce) {
-        recoveryRequest.set({ discoverable: false, signers: [], signatures: [] });
-        await recoveryRequest.save();
-        return false;
-    }
+    const socialRecoveryModule = await testing_wallet_helper_functions_1.contracts.Wallet.getSocialModuleInstance(provider).attach(recoveryRequest.socialRecoveryAddress);
+    /*const nonce = (await lostWallet.nonce()).toNumber();
+    if (nonce !== recoveryRequestJSON.userOperation.nonce){
+      recoveryRequest.set({discoverable: false, signers: [], signatures: []});
+      await recoveryRequest.save();
+      return false;
+    }*/
     //
-    const guardiansCount = (await lostWallet.getGuardiansCount()).toNumber();
+    const guardiansCount = (await socialRecoveryModule.friendsCount()).toNumber();
     const guardians = [];
     for (let i = 0; i < guardiansCount; i++) {
-        const guardianAddress = await lostWallet.getGuardian(i);
+        const guardianAddress = await socialRecoveryModule.friends(i);
         guardians.push(guardianAddress);
     }
     const signers = [];
@@ -101,40 +110,21 @@ const runRelayChecks = async (recoveryRequest) => {
     recoveryRequest.set({ signers, signatures });
     await recoveryRequest.save();
     //
-    const minimumGuardians = (await lostWallet.getMinGuardiansSignatures()).toNumber();
+    const minimumGuardians = (await socialRecoveryModule.threshold()).toNumber();
     if (signers.length < minimumGuardians) {
         return false;
     }
-    // if all checks pass, relay to bundler
-    await relayUserOperations(recoveryRequest);
-    recoveryRequest.set({ status: "SUCCESS" });
+    recoveryRequest.set({ readyToSubmit: true });
     await recoveryRequest.save();
+    //
+    return true;
 };
-const relayUserOperations = async (recoveryRequest) => {
-    const walletSignatureValues = [];
-    const recoveryRequestJSON = recoveryRequest.toJSON();
-    for (let i = 0; i < recoveryRequestJSON.signers.length; i++) {
-        const signerAddress = recoveryRequestJSON.signers[i];
-        const signature = recoveryRequestJSON.signatures[i];
-        walletSignatureValues.push({
-            signer: signerAddress,
-            signature: signature,
-        });
-    }
-    console.log(recoveryRequestJSON.userOperation.signature);
-    recoveryRequestJSON.userOperation.signature = ethers_1.ethers.utils.defaultAbiCoder.encode(["uint8", "(address signer, bytes signature)[]"], [1, walletSignatureValues]);
-    console.log(recoveryRequestJSON.userOperation.signature);
-    await axios_1.default.post(`${config_1.Env.BUNDLER_URL}/v1/relay/submit`, { userOperations: [recoveryRequestJSON.userOperation], network: (recoveryRequestJSON.network) });
-};
-const getHashedMessage = async (recoveryRequest) => {
-    return ethers_1.ethers.utils.arrayify(testing_wallet_helper_functions_1.wallet.message.requestId(recoveryRequest.toJSON().userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[recoveryRequest.network]));
-};
-exports.getHashedMessage = getHashedMessage;
 const findByWalletAddress = async (walletAddress, network) => {
-    return recoveryRequest_model_1.default.find({ walletAddress, network, discoverable: true }, { signers: 0 });
+    walletAddress = '^' + walletAddress + '$';
+    return recoveryRequest_model_1.default.find({ 'walletAddress': { '$regex': walletAddress, $options: 'i' }, network, discoverable: true }, { signers: 0 });
 };
 exports.findByWalletAddress = findByWalletAddress;
 const findById = async (id) => {
-    return recoveryRequest_model_1.default.findOne({ _id: id, discoverable: true }, { signers: 0 });
+    return recoveryRequest_model_1.default.findOne({ _id: id }, { signers: 0 });
 };
 exports.findById = findById;

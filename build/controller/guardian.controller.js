@@ -26,20 +26,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchById = exports.fetchByAddress = exports.sign = exports.post = void 0;
+exports.fetchById = exports.fetchByAddress = exports.sign = exports.submit = exports.post = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const utils_1 = require("../utils");
 const GuardianService = __importStar(require("../services/guardian.service"));
-const network_1 = require("../config/network");
-const testing_wallet_helper_functions_1 = require("testing-wallet-helper-functions");
 exports.post = (0, utils_1.catchAsync)(async (req, res) => {
     const params = req.body;
-    const response = await GuardianService.create(params.walletAddress, params.newOwner, params.network);
+    const response = await GuardianService.create(params.walletAddress, params.socialRecoveryAddress, params.oldOwner, params.newOwner, params.dataHash, params.network);
     res.send(response);
+});
+exports.submit = (0, utils_1.catchAsync)(async (req, res) => {
+    const { id, transactionHash } = req.body;
+    await GuardianService.submit(id, transactionHash);
+    res.send({ success: true });
 });
 exports.sign = (0, utils_1.catchAsync)(async (req, res) => {
     const { id, signedMessage } = req.body;
-    await GuardianService.signRecoveryRequest(id, signedMessage);
+    await GuardianService.signDataHash(id, signedMessage);
     res.send({ success: true });
 });
 exports.fetchByAddress = (0, utils_1.catchAsync)(async (req, res) => {
@@ -48,8 +51,7 @@ exports.fetchByAddress = (0, utils_1.catchAsync)(async (req, res) => {
     const responses = [];
     for (const request of walletRequests) {
         const requestJSON = await (request.toJSON());
-        const requestId = testing_wallet_helper_functions_1.wallet.message.requestId(requestJSON.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[request.network]);
-        const object = { ...requestJSON, requestId: requestId, signaturesAcquired: requestJSON.signatures.length, userOperation: null, signatures: null };
+        const object = { ...requestJSON, signaturesAcquired: requestJSON.signatures.length };
         responses.push(object);
     }
     res.send(responses);
@@ -61,7 +63,6 @@ exports.fetchById = (0, utils_1.catchAsync)(async (req, res) => {
         throw new utils_1.ApiError(http_status_1.default.NOT_FOUND, `Recovery request not found`);
     }
     const requestJSON = await (request.toJSON());
-    const requestId = testing_wallet_helper_functions_1.wallet.message.requestId(requestJSON.userOperation, testing_wallet_helper_functions_1.contracts.EntryPoint.address, network_1.NetworkChainIds[request.network]);
-    const object = { ...requestJSON, requestId: requestId, signaturesAcquired: requestJSON.signatures.length, userOperation: null, signatures: null };
+    const object = { ...requestJSON, signaturesAcquired: requestJSON.signatures.length };
     res.send(object);
 });

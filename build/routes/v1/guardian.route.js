@@ -33,6 +33,9 @@ const guardianController = __importStar(require("../../controller/guardian.contr
 const router = express_1.default.Router();
 router.route("/create").post((0, middlewares_1.validate)(guardianValidation.post), guardianController.post);
 router
+    .route("/submit")
+    .post((0, middlewares_1.validate)(guardianValidation.submit), guardianController.submit);
+router
     .route("/sign")
     .post((0, middlewares_1.validate)(guardianValidation.sign), guardianController.sign);
 router

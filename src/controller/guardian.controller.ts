@@ -1,12 +1,14 @@
 import httpStatus from "http-status";
 import { catchAsync, ApiError } from "../utils";
 import * as GuardianService from "../services/guardian.service";
-import {NetworkChainIds, Networks} from "../config/network";
-import {contracts, wallet} from "testing-wallet-helper-functions";
+import {Networks} from "../config/network";
 
 interface PostRequestBody {
   walletAddress: string;
+  socialRecoveryAddress: string;
+  oldOwner: string;
   newOwner: string;
+  dataHash: string;
   network: Networks;
 }
 
@@ -15,18 +17,33 @@ interface SignRequestBody {
   signedMessage: string;
 }
 
+interface SubmitRequestBody {
+  id: string;
+  transactionHash: string;
+}
+
 
 export const post = catchAsync(async (req, res) => {
   const params = req.body as PostRequestBody;
-  const response = await GuardianService.create(params.walletAddress, params.newOwner, params.network);
+  const response = await GuardianService.create(params.walletAddress, params.socialRecoveryAddress, params.oldOwner, params.newOwner, params.dataHash, params.network);
 
   res.send(response);
+});
+
+export const submit = catchAsync(async (req, res) => {
+  const { id, transactionHash } = req.body as SubmitRequestBody;
+
+  await GuardianService.submit(
+    id, transactionHash
+  );
+
+  res.send({success:true});
 });
 
 export const sign = catchAsync(async (req, res) => {
   const { id, signedMessage } = req.body as SignRequestBody;
 
-  await GuardianService.signRecoveryRequest(
+  await GuardianService.signDataHash(
     id, signedMessage
   );
 
@@ -46,8 +63,7 @@ export const fetchByAddress = catchAsync(async (req, res) => {
   const responses = [];
   for (const request of walletRequests){
     const requestJSON = await (request.toJSON());
-    const requestId = wallet.message.requestId(requestJSON.userOperation, contracts.EntryPoint.address, NetworkChainIds[request.network]);
-    const object = {...requestJSON, requestId: requestId, signaturesAcquired: requestJSON.signatures.length, userOperation: null, signatures: null};
+    const object = {...requestJSON, signaturesAcquired: requestJSON.signatures.length};
     responses.push(object);
   }
 
@@ -70,8 +86,7 @@ export const fetchById = catchAsync(async (req, res) => {
   }
 
   const requestJSON = await (request.toJSON());
-  const requestId = wallet.message.requestId(requestJSON.userOperation, contracts.EntryPoint.address, NetworkChainIds[request.network]);
-  const object = {...requestJSON, requestId: requestId, signaturesAcquired: requestJSON.signatures.length, userOperation: null, signatures: null};
+  const object = {...requestJSON, signaturesAcquired: requestJSON.signatures.length};
 
   res.send(object);
 });

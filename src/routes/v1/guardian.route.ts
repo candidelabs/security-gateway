@@ -8,6 +8,10 @@ const router = express.Router();
 router.route("/create").post(validate(guardianValidation.post), guardianController.post);
 
 router
+  .route("/submit")
+  .post(validate(guardianValidation.submit), guardianController.submit);
+
+router
   .route("/sign")
   .post(validate(guardianValidation.sign), guardianController.sign);
 
