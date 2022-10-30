@@ -5,11 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findById = exports.findByWalletAddress = exports.signDataHash = exports.submit = exports.create = void 0;
 const http_status_1 = __importDefault(require("http-status"));
-const testing_wallet_helper_functions_1 = require("testing-wallet-helper-functions");
 const recoveryRequest_model_1 = __importDefault(require("../models/recoveryRequest.model"));
 const utils_1 = require("../utils");
 const ethers_1 = require("ethers");
 const rpc_1 = require("../utils/rpc");
+const contractSource_1 = require("../utils/contractSource");
 const create = async (walletAddress, socialRecoveryAddress, oldOwner, newOwner, dataHash, network) => {
     const lastHour = new Date();
     lastHour.setHours(lastHour.getHours() - 1);
@@ -19,7 +19,7 @@ const create = async (walletAddress, socialRecoveryAddress, oldOwner, newOwner, 
     let nonce = 0;
     try {
         const provider = new ethers_1.ethers.providers.JsonRpcProvider((0, rpc_1.getRPC)(network));
-        nonce = await testing_wallet_helper_functions_1.wallet.proxy.getNonce(provider, walletAddress);
+        nonce = await (0, contractSource_1.getNonce)(walletAddress, provider);
     }
     catch (e) {
         throw new utils_1.ApiError(http_status_1.default.BAD_REQUEST, `Lost wallet address is not a smart contract wallet`);
@@ -84,7 +84,7 @@ exports.signDataHash = signDataHash;
 const runRelayChecks = async (recoveryRequest) => {
     const recoveryRequestJSON = recoveryRequest.toJSON();
     const provider = new ethers_1.ethers.providers.JsonRpcProvider((0, rpc_1.getRPC)(recoveryRequest.network));
-    const socialRecoveryModule = await testing_wallet_helper_functions_1.contracts.Wallet.getSocialModuleInstance(provider).attach(recoveryRequest.socialRecoveryAddress);
+    const socialRecoveryModule = await (0, contractSource_1.getSocialModuleInstance)(recoveryRequest.socialRecoveryAddress, provider);
     /*const nonce = (await lostWallet.nonce()).toNumber();
     if (nonce !== recoveryRequestJSON.userOperation.nonce){
       recoveryRequest.set({discoverable: false, signers: [], signatures: []});
@@ -92,17 +92,15 @@ const runRelayChecks = async (recoveryRequest) => {
       return false;
     }*/
     //
-    const guardiansCount = (await socialRecoveryModule.friendsCount()).toNumber();
-    const guardians = [];
-    for (let i = 0; i < guardiansCount; i++) {
-        const guardianAddress = await socialRecoveryModule.friends(i);
-        guardians.push(guardianAddress);
-    }
+    let guardians = await socialRecoveryModule.getFriends();
+    guardians = guardians.map((element) => {
+        return element.toLowerCase();
+    });
     const signers = [];
     const signatures = [];
     for (let i = 0; i < recoveryRequestJSON.signers.length; i++) {
         const signerAddress = recoveryRequestJSON.signers[i];
-        if (guardians.includes(signerAddress)) {
+        if (guardians.includes(signerAddress.toLowerCase())) {
             signers.push(signerAddress);
             signatures.push(recoveryRequestJSON.signatures[i]);
         }

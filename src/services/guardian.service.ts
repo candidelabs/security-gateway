@@ -1,10 +1,10 @@
 import httpStatus from "http-status";
-import { wallet, contracts } from "testing-wallet-helper-functions";
 import RecoverRequest, {IRecoveryRequest} from "../models/recoveryRequest.model";
 import {ApiError, createEmojiSet} from "../utils";
 import {ethers} from "ethers";
-import {Networks} from "../config/network";
+import {Networks} from "../config";
 import {getRPC} from "../utils/rpc";
+import {getNonce, getSocialModuleInstance} from "../utils/contractSource";
 
 export const create = async (walletAddress: string, socialRecoveryAddress: string, oldOwner: string, newOwner: string, dataHash: string, network: Networks) => {
   const lastHour = new Date();
@@ -18,7 +18,7 @@ export const create = async (walletAddress: string, socialRecoveryAddress: strin
   let nonce = 0;
   try {
     const provider = new ethers.providers.JsonRpcProvider(getRPC(network));
-    nonce = await wallet.proxy.getNonce(provider, walletAddress);
+    nonce = await getNonce(walletAddress, provider);
   } catch (e) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
@@ -95,7 +95,7 @@ export const signDataHash = async (id: string, signedMessage: string) => {
 const runRelayChecks = async (recoveryRequest: IRecoveryRequest) => {
   const recoveryRequestJSON = recoveryRequest.toJSON();
   const provider = new ethers.providers.JsonRpcProvider(getRPC(recoveryRequest.network));
-  const socialRecoveryModule = await contracts.Wallet.getSocialModuleInstance(provider).attach(recoveryRequest.socialRecoveryAddress);
+  const socialRecoveryModule = await getSocialModuleInstance(recoveryRequest.socialRecoveryAddress, provider);
   /*const nonce = (await lostWallet.nonce()).toNumber();
   if (nonce !== recoveryRequestJSON.userOperation.nonce){
     recoveryRequest.set({discoverable: false, signers: [], signatures: []});
@@ -103,17 +103,15 @@ const runRelayChecks = async (recoveryRequest: IRecoveryRequest) => {
     return false;
   }*/
   //
-  const guardiansCount = (await socialRecoveryModule.friendsCount()).toNumber();
-  const guardians = [];
-  for (let i = 0; i < guardiansCount; i++) {
-    const guardianAddress = await socialRecoveryModule.friends(i);
-    guardians.push(guardianAddress);
-  }
+  let guardians = await socialRecoveryModule.getFriends();
+  guardians = guardians.map((element: string) => {
+    return element.toLowerCase();
+  });
   const signers = [];
   const signatures = [];
   for (let i = 0; i < recoveryRequestJSON.signers.length; i++){
     const signerAddress = recoveryRequestJSON.signers[i];
-    if (guardians.includes(signerAddress)){
+    if (guardians.includes(signerAddress.toLowerCase())){
       signers.push(signerAddress);
       signatures.push(recoveryRequestJSON.signatures[i]);
     }
