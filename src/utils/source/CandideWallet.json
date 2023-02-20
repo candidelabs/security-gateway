@@ -1,17 +1,6 @@
 {
   "abi": [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "anEntryPoint",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
@@ -371,19 +360,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "eip4337Fallback",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -558,6 +534,49 @@
           "internalType": "enum Enum.Operation",
           "name": "operation",
           "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "paymaster",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "approveToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "approveAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "execTransactionFromEntrypoint",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "internalType": "enum Enum.Operation",
+          "name": "operation",
+          "type": "uint8"
         }
       ],
       "name": "execTransactionFromModule",
@@ -618,30 +637,6 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract GnosisSafe",
-          "name": "safe",
-          "type": "address"
-        }
-      ],
-      "name": "getCurrentEIP4337Manager",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "prev",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "manager",
-          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -868,21 +863,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "prevModule",
-          "type": "address"
-        },
-        {
-          "internalType": "contract EIP4337Manager",
-          "name": "oldManager",
-          "type": "address"
-        },
-        {
-          "internalType": "contract EIP4337Manager",
-          "name": "newManager",
+          "name": "newEntrypoint",
           "type": "address"
         }
       ],
-      "name": "replaceEIP4337Manager",
+      "name": "replaceEntrypoint",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -998,27 +983,52 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "singleton",
-          "type": "address"
-        },
-        {
-          "internalType": "contract EIP4337Manager",
-          "name": "manager",
-          "type": "address"
-        },
-        {
           "internalType": "address[]",
-          "name": "owners",
+          "name": "_owners",
           "type": "address[]"
         },
         {
+          "internalType": "uint256",
+          "name": "_threshold",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
           "internalType": "bytes",
-          "name": "EmptyBytes",
+          "name": "data",
           "type": "bytes"
+        },
+        {
+          "internalType": "address",
+          "name": "fallbackHandler",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "payment",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address payable",
+          "name": "paymentReceiver",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_entryPoint",
+          "type": "address"
         }
       ],
-      "name": "setupEIP4337",
+      "name": "setupWithEntrypoint",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1079,109 +1089,6 @@
         }
       ],
       "name": "swapOwner",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "contract GnosisSafe",
-          "name": "safe",
-          "type": "address"
-        },
-        {
-          "internalType": "contract EIP4337Manager",
-          "name": "manager",
-          "type": "address"
-        }
-      ],
-      "name": "validateEip4337",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "sender",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "nonce",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bytes",
-              "name": "initCode",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes",
-              "name": "callData",
-              "type": "bytes"
-            },
-            {
-              "internalType": "uint256",
-              "name": "callGas",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "verificationGas",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "preVerificationGas",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "maxFeePerGas",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "maxPriorityFeePerGas",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "paymaster",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes",
-              "name": "paymasterData",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes",
-              "name": "signature",
-              "type": "bytes"
-            }
-          ],
-          "internalType": "struct UserOperation",
-          "name": "userOp",
-          "type": "tuple"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "requestId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "missingWalletFunds",
-          "type": "uint256"
-        }
-      ],
-      "name": "validateUserOp",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

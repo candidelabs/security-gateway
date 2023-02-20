@@ -2,12 +2,9 @@ import Joi from "joi";
 import { ethereumAddress } from "./custom.validation";
 import {ValidNetworks} from "../config";
 
-export const post = {
+export const create = {
   body: Joi.object().keys({
-    walletAddress: Joi.required().custom(ethereumAddress),
-    socialRecoveryAddress: Joi.required().custom(ethereumAddress),
-    dataHash: Joi.string().required(),
-    oldOwner: Joi.required().custom(ethereumAddress),
+    accountAddress: Joi.required().custom(ethereumAddress),
     newOwner: Joi.required().custom(ethereumAddress),
     network: Joi.string().valid(...ValidNetworks).required(),
   }),
@@ -23,19 +20,27 @@ export const submit = {
 export const sign = {
   body: Joi.object().keys({
     id: Joi.string().required(),
+    signer: Joi.string().required(),
     signedMessage: Joi.string().required(),
   }),
 };
 
 export const fetchByAddress = {
   query: Joi.object().keys({
-    walletAddress: Joi.custom(ethereumAddress).required(),
+    accountAddress: Joi.custom(ethereumAddress).required(),
     network: Joi.string().valid(...ValidNetworks).required(),
+    nonce: Joi.number().integer().greater(-1).required(),
   }),
 };
 
 export const fetchById = {
   query: Joi.object().keys({
+    id: Joi.string().required(),
+  }),
+};
+
+export const finalize = {
+  body: Joi.object().keys({
     id: Joi.string().required(),
   }),
 };

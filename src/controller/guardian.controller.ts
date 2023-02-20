@@ -4,16 +4,14 @@ import * as GuardianService from "../services/guardian.service";
 import {Networks} from "../config/network";
 
 interface PostRequestBody {
-  walletAddress: string;
-  socialRecoveryAddress: string;
-  oldOwner: string;
+  accountAddress: string;
   newOwner: string;
-  dataHash: string;
   network: Networks;
 }
 
 interface SignRequestBody {
   id: string;
+  signer: string;
   signedMessage: string;
 }
 
@@ -25,7 +23,11 @@ interface SubmitRequestBody {
 
 export const post = catchAsync(async (req, res) => {
   const params = req.body as PostRequestBody;
-  const response = await GuardianService.create(params.walletAddress, params.socialRecoveryAddress, params.oldOwner, params.newOwner, params.dataHash, params.network);
+  const response = await GuardianService.create(
+    params.accountAddress,
+    params.newOwner,
+    params.network
+  );
 
   res.send(response);
 });
@@ -41,27 +43,29 @@ export const submit = catchAsync(async (req, res) => {
 });
 
 export const sign = catchAsync(async (req, res) => {
-  const { id, signedMessage } = req.body as SignRequestBody;
+  const { id, signer, signedMessage } = req.body as SignRequestBody;
 
-  await GuardianService.signDataHash(
-    id, signedMessage
+  await GuardianService.signRecoveryHash(
+    id, signer, signedMessage
   );
 
   res.send({success:true});
 });
 
 export const fetchByAddress = catchAsync(async (req, res) => {
-  const { walletAddress, network } = req.query as {
-    walletAddress: string;
+  const { accountAddress, network, nonce } = req.query as unknown as {
+    accountAddress: string;
     network: Networks;
+    nonce: number;
   };
 
-  const walletRequests = await GuardianService.findByWalletAddress(
-    walletAddress,
-    network
+  const accountRequests = await GuardianService.findByAccountAddress(
+    accountAddress,
+    network,
+    nonce,
   );
   const responses = [];
-  for (const request of walletRequests){
+  for (const request of accountRequests){
     const requestJSON = await (request.toJSON());
     const object = {...requestJSON, signaturesAcquired: requestJSON.signatures.length};
     responses.push(object);
@@ -89,4 +93,25 @@ export const fetchById = catchAsync(async (req, res) => {
   const object = {...requestJSON, signaturesAcquired: requestJSON.signatures.length};
 
   res.send(object);
+});
+
+
+export const finalize = catchAsync(async (req, res) => {
+  const { id } = req.body as {
+    id: string;
+  };
+
+  const request = await GuardianService.findById(
+      id,
+  );
+  if (request == null){
+    throw new ApiError(
+        httpStatus.NOT_FOUND,
+        `Recovery request not found`
+    );
+  }
+
+  const transactionHash = await GuardianService.finalize(request);
+
+  res.send({success:true, transactionHash});
 });

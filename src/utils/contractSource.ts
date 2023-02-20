@@ -1,12 +1,12 @@
 import {BigNumber, ethers} from "ethers";
 import socialSource from "./source/SocialRecoveryModule.json";
-import walletSource from "./source/EIP4337Manager.json";
+import walletSource from "./source/CandideWallet.json";
 
 export const getNonce = async (
-  walletAddress: string,
+  accountAddress: string,
   provider: ethers.providers.Provider,
 ) => {
-  const w = getInstance(walletAddress, provider);
+  const w = getInstance(accountAddress, provider);
   return w.nonce().then((nonce: BigNumber) => nonce.toNumber());
 };
 

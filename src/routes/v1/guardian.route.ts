@@ -5,7 +5,7 @@ import * as guardianController from "../../controller/guardian.controller";
 
 const router = express.Router();
 
-router.route("/create").post(validate(guardianValidation.post), guardianController.post);
+router.route("/create").post(validate(guardianValidation.create), guardianController.post);
 
 router
   .route("/submit")
@@ -22,5 +22,9 @@ router
 router
   .route("/fetchById")
   .get(validate(guardianValidation.fetchById), guardianController.fetchById);
+
+router
+    .route("/finalize")
+    .post(validate(guardianValidation.finalize), guardianController.finalize);
 
 export default router;
