@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 import isURL from "validator/lib/isURL";
 import helmet from "helmet";
+// @ts-ignore
 import xss from "xss-clean";
 import mongoSanitize from "express-mongo-sanitize";
 import compression from "compression";
@@ -69,7 +70,7 @@ app.use(cors());
 app.use(
   rateLimit({
     windowMs: 60 * 1000, // 1 minutes
-    max: 5, // Limit each IP to 5 requests per `window`
+    max: 25, // Limit each IP to 5 requests per `window`
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   })

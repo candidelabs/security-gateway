@@ -6,8 +6,11 @@ interface AppEnvironment {
   NODE_ENV: "production" | "development";
   NAME: string;
   PORT: number;
-  ALCHEMY_GOERLI_RPC: string;
+  GOERLI_RPC: string;
+  OPTIMISM_GOERLI_RPC: string;
+  OPTIMISM_RPC: string;
   BUNDLER_URL: string;
+  FINALIZER_SK: string;
   MONGO_URL: string;
   SENTRY_DSN: string;
 }
@@ -15,10 +18,13 @@ interface AppEnvironment {
 export const Env: AppEnvironment = {
   NODE_ENV:
     process.env.NODE_ENV === "production" ? "production" : "development",
-  NAME: "Guardians",
+  NAME: "Security Gateway",
   PORT: Number(process.env.CANDIDE_SECURITY_PORT),
   MONGO_URL: process.env.CANDIDE_SECURITY_MONGODB_URL ?? "",
-  ALCHEMY_GOERLI_RPC: process.env.CANDIDE_SECURITY_ALCHEMY_GOERLI_RPC ?? "",
+  GOERLI_RPC: process.env.CANDIDE_SECURITY_GOERLI_RPC ?? "",
+  OPTIMISM_GOERLI_RPC: process.env.CANDIDE_SECURITY_OPTIMISM_GOERLI_RPC ?? "",
+  OPTIMISM_RPC: process.env.CANDIDE_SECURITY_OPTIMISM_RPC ?? "",
   BUNDLER_URL: process.env.CANDIDE_SECURITY_BUNDLER_URL ?? "",
+  FINALIZER_SK: process.env.CANDIDE_SECURITY_FINALIZER_SK ?? "",
   SENTRY_DSN: process.env.CANDIDE_SECURITY_SENTRY_DSN ?? "",
 };
