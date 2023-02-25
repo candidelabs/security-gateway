@@ -9,7 +9,6 @@ interface AppEnvironment {
   GOERLI_RPC: string;
   OPTIMISM_GOERLI_RPC: string;
   OPTIMISM_RPC: string;
-  BUNDLER_URL: string;
   FINALIZER_SK: string;
   MONGO_URL: string;
   SENTRY_DSN: string;
@@ -24,7 +23,6 @@ export const Env: AppEnvironment = {
   GOERLI_RPC: process.env.CANDIDE_SECURITY_GOERLI_RPC ?? "",
   OPTIMISM_GOERLI_RPC: process.env.CANDIDE_SECURITY_OPTIMISM_GOERLI_RPC ?? "",
   OPTIMISM_RPC: process.env.CANDIDE_SECURITY_OPTIMISM_RPC ?? "",
-  BUNDLER_URL: process.env.CANDIDE_SECURITY_BUNDLER_URL ?? "",
   FINALIZER_SK: process.env.CANDIDE_SECURITY_FINALIZER_SK ?? "",
   SENTRY_DSN: process.env.CANDIDE_SECURITY_SENTRY_DSN ?? "",
 };

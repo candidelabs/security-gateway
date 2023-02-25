@@ -11,6 +11,7 @@ Service for handling security operations for candide wallet client app.
 ## App setup
 
 - Generate .env file (scripts/buildenv.sh)
+    - Add your variables
     - `CANDIDE_SECURITY_SENTRY_DSN` is optional
 
 
