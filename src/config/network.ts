@@ -17,19 +17,19 @@ const initNetworksConfig = (): Record<Networks, NetworksConfig> => {
     Goerli: {
       name: "Goerli",
       chainId: "5",
-      socialRecoveryModuleAddress: "0x0014F33Fc01017d9AC6762E8285b51Ad07089E51",
+      socialRecoveryModuleAddress: "0xCbf67d131Fa0775c5d18676c58de982c349aFC0b",
       client: Env.GOERLI_RPC,
     },
     "Optimism Goerli": {
       name: "Optimism Goerli",
       chainId: "420",
-      socialRecoveryModuleAddress: "0x0014F33Fc01017d9AC6762E8285b51Ad07089E51",
+      socialRecoveryModuleAddress: "0xCbf67d131Fa0775c5d18676c58de982c349aFC0b",
       client: Env.OPTIMISM_GOERLI_RPC,
     },
     Optimism: {
       name: "Optimism",
       chainId: "10",
-      socialRecoveryModuleAddress: "0x0014F33Fc01017d9AC6762E8285b51Ad07089E51",
+      socialRecoveryModuleAddress: "0xCbf67d131Fa0775c5d18676c58de982c349aFC0b",
       client: Env.OPTIMISM_RPC,
     },
   };
