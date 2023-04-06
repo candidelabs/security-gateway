@@ -29,7 +29,7 @@ const initNetworksConfig = (): Record<Networks, NetworksConfig> => {
     Optimism: {
       name: "Optimism",
       chainId: "10",
-      socialRecoveryModuleAddress: "0xCbf67d131Fa0775c5d18676c58de982c349aFC0b",
+      socialRecoveryModuleAddress: "0x4490F5eca1814a24a9ed9203DFA1B2FdE3795C9e",
       client: Env.OPTIMISM_RPC,
     },
   };
