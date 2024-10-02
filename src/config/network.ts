@@ -1,9 +1,9 @@
 import {BigNumberish} from "ethers";
 import {Env} from "./env";
 
-export type Networks = "Goerli" | "Optimism" | "Optimism Goerli";
+export type Networks = "Sepolia" | "Optimism" | "Optimism Sepolia";
 
-export const ValidNetworks: Array<Networks> = ["Goerli", "Optimism", "Optimism Goerli"];
+export const ValidNetworks: Array<Networks> = ["Sepolia", "Optimism", "Optimism Sepolia"];
 
 interface NetworksConfig {
   name: string;
@@ -14,17 +14,17 @@ interface NetworksConfig {
 
 const initNetworksConfig = (): Record<Networks, NetworksConfig> => {
   return {
-    Goerli: {
-      name: "Goerli",
-      chainId: "5",
-      socialRecoveryModuleAddress: "0x831153c6b9537d0fF5b7DB830C2749DE3042e776",
-      client: Env.GOERLI_RPC,
+    "Sepolia": {
+      name: "Sepolia",
+      chainId: "11155111",
+      socialRecoveryModuleAddress: "0x949d01d424bE050D09C16025dd007CB59b3A8c66",
+      client: Env.SEPOLIA_RPC,
     },
-    "Optimism Goerli": {
-      name: "Optimism Goerli",
-      chainId: "420",
+    "Optimism Sepolia": {
+      name: "Optimism Sepolia",
+      chainId: "11155420",
       socialRecoveryModuleAddress: "0x831153c6b9537d0fF5b7DB830C2749DE3042e776",
-      client: Env.OPTIMISM_GOERLI_RPC,
+      client: Env.OPTIMISM_SEPOLIA_RPC,
     },
     Optimism: {
       name: "Optimism",
