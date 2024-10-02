@@ -12,6 +12,7 @@ export const errorConverter = (
   let error = err;
   if (!(error instanceof ApiError)) {
     const statusCode = error.statusCode ?? httpStatus.INTERNAL_SERVER_ERROR;
+    // @ts-ignore
     const message = error.message || httpStatus[statusCode];
     error = new ApiError(statusCode, message, false, err.stack);
   }
